@@ -108,7 +108,11 @@ begin
   lPacket := TLoggerProUDPSyslogPacket.Create(aLogItem, FHostName, FUserName, FApplication, FVersion, FProcID,
     FUnixLineBreaks, FUTF8BOM);
   try
+    {$IF CompilerVersion >= 24}
     FLoggerProSyslogAppenderClient.Broadcast(lPacket.SyslogData, FPort, FIP, IndyTextEncoding_UTF8);
+    {$ELSE}
+    FLoggerProSyslogAppenderClient.Broadcast(lPacket.SyslogData, FPort, FIP, TIdTextEncoding.UTF8);
+    {$IFEND}
   finally
     lPacket.Free;
   end;
@@ -134,11 +138,19 @@ begin
     TLogType.Error:
       FPriority := RFC5424Priority(1, 4);
   end;
+  {$IF Compilerversion >= 24}
   if pLogItem.LogMessage.Contains('Access Violation') then
+  {$ELSE}
+  if Pos('Access Violation', pLogItem.LogMessage) > 0 then
+  {$IFEND}
     FPriority := RFC5424Priority(1, 3);
   FApplication := pApplication;
   FVersion := pVersion;
+  {$IF Compilerversion >= 24}
   FTimestamp := DateToISO8601(pLogItem.Timestamp);
+  {$ELSE}
+  DateTimeToString(FTimestamp, 'yyyy-mm-dd', pLogItem.Timestamp);
+  {$IFEND}
   FHostName := pHostName;
   FUserName := pUserName;
   FApplication := pApplication;
@@ -148,7 +160,11 @@ begin
   FMessageID := pLogItem.LogTag;
   FUnixLineBreaks := pUnixLineBreaks;
   if FUnixLineBreaks then
+    {$IF Compilerversion >= 24}
     FMessageData := pLogItem.LogMessage.Replace(sLineBreak, '#10', [rfReplaceAll])
+    {$ELSE}
+    FMessageData := StringReplace(pLogItem.LogMessage, sLineBreak, '#10', [rfReplaceAll])
+    {$IFEND}
   else
     FMessageData := pLogItem.LogMessage;
   FUTF8BOM := pUTF8BOM;

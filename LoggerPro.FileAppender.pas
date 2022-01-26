@@ -4,7 +4,7 @@ unit LoggerPro.FileAppender;
 
 {$IF Defined(Android) or Defined(iOS)}
 {$DEFINE MOBILE}
-{$ENDIF}
+{$IFEND}
 
 interface
 
@@ -115,7 +115,7 @@ uses
     ,Androidapi.Helpers
     ,Androidapi.JNI.GraphicsContentViewText
     ,Androidapi.JNI.JavaTypes
-{$ENDIF}
+{$IFEND}
     ;
 
 { TLoggerProFileAppender }
@@ -126,20 +126,42 @@ var
   lModuleName: string;
   lPath: string;
   lFormat: string;
+
+  {$IF CompilerVersion < 24}
+  function PadLeft(aString: string; aCharCount: Integer; aChar: Char): string;
+  var
+    PadCount: Integer;
+  begin
+    PadCount := ACharCount - Length(AString);
+    if PadCount > 0 then
+    begin
+      SetLength(Result, ACharCount);
+      FillChar(Result[1], PadCount, AChar);
+      Move(AString[1], Result[PadCount + 1], Length(AString));
+    end
+    else
+      Result := AString;
+  end;
+  {$IFEND}
+
 begin
 {$IF Defined(Android)}
   lModuleName := TAndroidHelper.ApplicationTitle.Replace(' ', '_', [rfReplaceAll]);
-{$ENDIF}
+{$IFEND}
 {$IF not Defined(Mobile)}
   lModuleName := TPath.GetFileNameWithoutExtension(GetModuleName(HInstance));
-{$ENDIF}
+{$IFEND}
 {$IF Defined(IOS)}
   raise Exception.Create('Platform not supported');
-{$ENDIF}
+{$IFEND}
   lFormat := fLogFileNameFormat;
 
   if TFileAppenderOption.IncludePID in fFileAppenderOptions then
+    {$IF CompilerVersion >= 24}
     lModuleName := lModuleName + '_pid_' + IntToStr(CurrentProcessId).PadLeft(6, '0');
+    {$ELSE}
+    lModuleName := lModuleName + '_pid_' +  PadLeft(IntToStr(CurrentProcessId), 6, '0');
+    {$IFEND}
 
   lPath := fLogsFolder;
   lExt := Format(lFormat, [lModuleName, aFileNumber, aTag]);
@@ -152,10 +174,10 @@ begin
   begin
 {$IF (Defined(MSWINDOWS) or Defined(POSIX)) and (not Defined(MOBILE))}
     fLogsFolder := TPath.GetDirectoryName(GetModuleName(HInstance));
-{$ENDIF}
+{$IFEND}
 {$IF Defined(Android) or Defined(IOS)}
     fLogsFolder := TPath.GetSharedDocumentsPath();
-{$ENDIF}
+{$IFEND}
   end;
   if not TDirectory.Exists(fLogsFolder) then
     TDirectory.CreateDirectory(fLogsFolder);

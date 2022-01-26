@@ -54,7 +54,11 @@ end;
 procedure TLoggerProEMailAppender.PrepareMessage(const aLogItem: TLogItem;
   out aSubject, aBody: String);
 begin
+  {$IF CompilerVersion >= 24}
   aSubject := 'LoggerPro ' + aLogItem.LogTypeAsString.ToUpper + ' [' + aLogItem.LogTag + ']';
+  {$ELSE}
+  aSubject := 'LoggerPro ' + UpperCase(aLogItem.LogTypeAsString) + ' [' + aLogItem.LogTag + ']';
+  {$IFEND}
   aBody := Format(DEFAULT_LOG_FORMAT, [datetimetostr(aLogItem.TimeStamp),
     aLogItem.ThreadID, aLogItem.LogTypeAsString, aLogItem.LogMessage,
     aLogItem.LogTag]);

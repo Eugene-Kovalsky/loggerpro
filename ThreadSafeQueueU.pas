@@ -41,6 +41,9 @@ type
     fEvent: TEvent;
     fMaxSize: UInt64;
     fShutDown: Boolean;
+    {$IF CompilerVersion < 27}
+    const cRetryCount: Byte = 20;
+    {$IFEND}
   public
     function Enqueue(const Item: T): Boolean;
     function Dequeue(out Item: T): TWaitResult; overload;
@@ -150,8 +153,10 @@ begin
 end;
 
 function TThreadSafeQueue<T>.Enqueue(const Item: T): Boolean;
+{$IF CompilerVersion >= 27}
 const
   cRetryCount: Byte = 20;
+{$IFEND}
 var
   lCount: Integer;
 begin
