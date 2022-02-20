@@ -310,7 +310,7 @@ implementation
 
 uses
   System.Types,
-  LoggerPro.FileAppender,
+  {LoggerPro.FileAppender,}
   System.SyncObjs,
   System.DateUtils,
   System.IOUtils;
@@ -569,7 +569,7 @@ end;
 
 procedure TLoggerThread.Execute;
 var
-  lQSize: UInt64;
+  lQSize: {$IF CompilerVersion < 27} Integer {$ELSE} UInt64 {$IFEND};
   lLogItem: TLogItem;
   I: Integer;
   lAction: TLogErrorAction;

@@ -47,7 +47,7 @@ type
   public
     function Enqueue(const Item: T): Boolean;
     function Dequeue(out Item: T): TWaitResult; overload;
-    function Dequeue(out QueueSize: UInt64; out Item: T): TWaitResult; overload;
+    function Dequeue(out QueueSize: {$IF CompilerVersion < 27} Integer {$ELSE} UInt64 {$IFEND}; out Item: T): TWaitResult; overload;
     function Dequeue: T; overload;
     function QueueSize: UInt64;
     procedure DoShutDown;
@@ -87,7 +87,7 @@ end;
 
 function TThreadSafeQueue<T>.Dequeue(out Item: T): TWaitResult;
 var
-  lQueueSize: UInt64;
+  lQueueSize: {$IF CompilerVersion < 27} Integer {$ELSE} UInt64 {$IFEND};
 begin
   Result := Dequeue(lQueueSize, Item);
 end;
@@ -97,7 +97,7 @@ begin
   Dequeue(Result);
 end;
 
-function TThreadSafeQueue<T>.Dequeue(out QueueSize: UInt64; out Item: T): TWaitResult;
+function TThreadSafeQueue<T>.Dequeue(out QueueSize: {$IF CompilerVersion < 27} Integer {$ELSE} UInt64 {$IFEND}; out Item: T): TWaitResult;
 var
   lWaitResult: TWaitResult;
 begin
